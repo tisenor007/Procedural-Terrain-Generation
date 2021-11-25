@@ -9,6 +9,7 @@ public class TerrainGenerator : MonoBehaviour
     public float amp = 10;
     public float freq = 0.08f;
     public GameObject player;
+    public GameObject tree;
     //public Material matColour;
     private Mesh mesh;
     private Vector3[] vertices;
@@ -41,24 +42,14 @@ public class TerrainGenerator : MonoBehaviour
 
     public void CreateShape()
     {
-        //vertices = new Vector3[]
-        //{
-        //    new Vector3 (0,0,0),
-        //    new Vector3 (0,0,1),
-        //    new Vector3 (1,0,0),
-        //    new Vector3 (1,0,1)
-        //};
-
-        //triangles = new int[] {
-        //    0,1,2,1,3,2
-        //};
         vertices = new Vector3[(mapSizeX + 1) * (mapSizeZ + 1)];
         for (int i = 0, z = 0; z <= mapSizeZ; z++)
         {
             for (int x = 0; x <= mapSizeX; x++)
             {
-                float y = Mathf.PerlinNoise(player.transform.position.x + x * freq, player.transform.position.z + z * freq) * amp;
-                vertices[i] = new Vector3(player.transform.position.x - (mapSizeZ / 2) + x, y, player.transform.position.z - (mapSizeZ/2) + z);
+                float y = Mathf.PerlinNoise((player.transform.position.x / 10) + x * freq, (player.transform.position.z / 10) + z * freq) * amp;
+                vertices[i] = new Vector3(player.transform.position.x - (mapSizeX / 2) + x, y, player.transform.position.z - (mapSizeZ/2) + z);
+                //tree.transform.position = vertices[(mapSizeX + 1 - (int)player.transform.position.x) * (mapSizeZ + 1 - (int)player.transform.position.z) / 2];
                 //OnDrawGizmos(i);
                 i++;
             }
