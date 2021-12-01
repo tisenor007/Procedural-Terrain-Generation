@@ -158,7 +158,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   head: {fileID: 963194225}
   mouseSensitivity: 5
-  speed: 2
+  speed: 5
   jumpHeight: 5
 --- !u!54 &539397666
 Rigidbody:
@@ -462,13 +462,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: afa364a4e6ebba64ab717f2f5b246d44, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mapSizeX: 50
-  mapSizeZ: 50
+  mapSizeX: 100
+  mapSizeZ: 62
   amp: 10
   freq: 0.06
-  waterLevel: 5
+  waterLevel: 3
   player: {fileID: 539397664}
   waterPrefab: {fileID: 4048670065312011560, guid: e273353280df8f24ba86b34b05467bb7, type: 3}
+  smoothGen: 0
 --- !u!4 &1754360847
 Transform:
   m_ObjectHideFlags: 0
@@ -502,7 +503,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 9c2203cfc7a76614fb859f5ac388d4f0, type: 2}
+  - {fileID: 2100000, guid: bdcff2233f46226498d5a88f878b3ad3, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

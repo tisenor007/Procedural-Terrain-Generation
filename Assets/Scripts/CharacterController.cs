@@ -12,7 +12,7 @@ public class CharacterController : MonoBehaviour
     private Rigidbody rb;
     float mouseX = 0;
     float mouseY = 0;
-    //private bool canJump;
+    private bool canJump;
     //private Ray ray;
     //private RaycastHit rayHit;
     // Start is called before the first frame update
@@ -46,8 +46,8 @@ public class CharacterController : MonoBehaviour
         //    else if (rayHit.transform.gameObject.tag != "Ground") { canJump = false; }
         //}
 
-        //if (Input.GetKeyDown(KeyCode.LeftShift)){speed = speed * 2;}
-        //if (Input.GetKeyUp(KeyCode.LeftShift)){speed = originSpeed;}
+        if (Input.GetKeyDown(KeyCode.LeftShift)) { speed = speed * 2; }
+        if (Input.GetKeyUp(KeyCode.LeftShift)) { speed = originSpeed; }
         //find a way to make this smoother!!!
         //if (Input.GetKeyDown(KeyCode.Space) && canJump == true) { rb.velocity = new Vector3(rb.velocity.x, rb.velocity.y + jumpHeight, rb.velocity.z); }
         if (Input.GetKeyDown(KeyCode.Space))
@@ -57,20 +57,20 @@ public class CharacterController : MonoBehaviour
         }
     }
 
-    //private void OnCollisionEnter(Collision other)
-    //{
-    //    if (other.gameObject.tag == "Ground")
-    //    {
-    //        canJump = true;
-    //    }
-    //    Debug.Log("canjumpppp");
-    //}
-    //private void OnCollisionExit(Collision other)
-    //{
-    //    if (other.gameObject.tag == "Ground")
-    //    {
-    //        canJump = false;
-    //    }
-    //    Debug.Log("cannotjumpppp");
-    //}
+    private void OnCollisionEnter(Collision other)
+    {
+        if (other.gameObject.tag == "Ground")
+        {
+            canJump = true;
+        }
+        //Debug.Log("canjumpppp");
+    }
+    private void OnCollisionExit(Collision other)
+    {
+        if (other.gameObject.tag == "Ground")
+        {
+            canJump = false;
+        }
+        //Debug.Log("cannotjumpppp");
+    }
 }
