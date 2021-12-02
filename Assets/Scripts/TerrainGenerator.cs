@@ -4,6 +4,14 @@ using UnityEngine;
 
 public class TerrainGenerator : MonoBehaviour
 {
+    public enum Biome
+    {
+        GrassLands,
+        Mountains,
+        Beach,
+        Snow,
+        Length
+    }
     public int mapSizeX = 10;
     public int mapSizeZ = 10;
     public float amp = 10;
@@ -11,46 +19,49 @@ public class TerrainGenerator : MonoBehaviour
     public float waterLevel;
     public GameObject player;
     public GameObject waterPrefab;
+    public float mountainHeight = 5;
+    public float mountainSnowHeight = 5;
     public bool smoothGen = false;
     //public Material matColour;
+    private GameObject water;
     private Mesh mesh;
     private Vector3[] vertices;
     private Vector2[] uvs;
-    private int[] triangles = new int[6];
-    private List<GameObject> water = new List<GameObject>();
+    private Biome[] biomes;
+    private int[][] triangles;
     private Vector3 middlePosition;
     private float timeGenSpeed = 10;
-    
+
     // Start is called before the first frame update
     void Start()
     {
         //timeGenSpeed = 10;
         CreateTerrain();
-        UpdateTerrain();
+        //UpdateTerrain();
     }
 
     // Update is called once per frame
     void Update()
     {
-        Debug.Log(amp / (freq * 10));
+        //Debug.Log(amp / (freq * 10));
         GetComponent<MeshCollider>().sharedMesh = mesh;
         if (smoothGen == false)
         {
             if (player.transform.position.x >= middlePosition.x + mapSizeX / 4 && player.transform.position.x > middlePosition.x || player.transform.position.x <= middlePosition.x - mapSizeX / 4 && player.transform.position.x < middlePosition.x || player.transform.position.z >= middlePosition.z + mapSizeZ / 4 && player.transform.position.z > middlePosition.z || player.transform.position.z <= middlePosition.z - mapSizeZ / 4 && player.transform.position.z < middlePosition.z)
             {
-                UpdateTerrain();
+                CreateTerrain();
             }
         }
         else if (smoothGen == true)
         {
-            UpdateTerrain();
+            CreateTerrain();
         }
 
     }
     public float ReturnPerlinNoise(int x, int z)
     {
         //time-gen math is for chunk gen and so the terrain doesn't generate too fast or make player appear faster than should
-        return Mathf.PerlinNoise((player.transform.position.x / (timeGenSpeed / (freq*10))) + x * freq, (player.transform.position.z / (timeGenSpeed / (freq*10))) + z * freq) * amp;
+        return Mathf.PerlinNoise((player.transform.position.x / (timeGenSpeed / (freq * 10))) + x * freq, (player.transform.position.z / (timeGenSpeed / (freq * 10))) + z * freq) * amp;
     }
     public Vector3 CenterTerrainWithPlayer(int x, float y, int z)
     {
@@ -59,9 +70,13 @@ public class TerrainGenerator : MonoBehaviour
     public void UpdateMesh()
     {
         mesh.Clear();
-
+        mesh.subMeshCount = 4;
         mesh.vertices = vertices;
-        mesh.triangles = triangles;
+        //mesh.triangles = triangles;
+        mesh.SetTriangles(triangles[0], 0);
+        mesh.SetTriangles(triangles[1], 1);
+        mesh.SetTriangles(triangles[2], 2);
+        mesh.SetTriangles(triangles[3], 3);
         mesh.uv = uvs;
 
         mesh.RecalculateNormals();
@@ -71,6 +86,9 @@ public class TerrainGenerator : MonoBehaviour
 
     public void CreateTerrain()
     {
+        Destroy(water);
+        water = Instantiate(waterPrefab, CenterTerrainWithPlayer(mapSizeX / 2, waterLevel, mapSizeZ / 2), Quaternion.Euler(90, 0, 0));
+        triangles = new int[(int)Biome.Length][];
         mesh = new Mesh();
         GetComponent<MeshFilter>().mesh = mesh;
         vertices = new Vector3[(mapSizeX + 1) * (mapSizeZ + 1)];
@@ -80,13 +98,25 @@ public class TerrainGenerator : MonoBehaviour
             {
                 float y = ReturnPerlinNoise(x, z);
                 vertices[i] = CenterTerrainWithPlayer(x, y, z);
-                water.Add(Instantiate(waterPrefab, CenterTerrainWithPlayer(x,waterLevel,z), Quaternion.Euler(90,0,0)));
+                water.transform.localScale = new Vector3(mapSizeX, mapSizeZ, 1);
                 i++;
             }
         }
-        foreach (GameObject waterSquare in water){waterSquare.transform.parent = this.transform;}
+        water.transform.parent = transform;
 
-        triangles = new int[mapSizeX * mapSizeZ * 6];
+        biomes = new Biome[vertices.Length];
+        for (int i = 0; i < vertices.Length; i++)
+        {
+            if (vertices[i].y >= mountainHeight && vertices[i].y < mountainHeight + mountainSnowHeight) { biomes[i] = Biome.Mountains; }
+            else if (vertices[i].y < mountainHeight && vertices[i].y > waterLevel) { biomes[i] = Biome.GrassLands; }
+            else if (vertices[i].y < waterLevel) { biomes[i] = Biome.Beach; }
+            else if (vertices[i].y > mountainHeight + mountainSnowHeight) { biomes[i] = Biome.Snow; }
+        }
+
+        triangles[0] = new int[mapSizeX * mapSizeZ * 6];
+        triangles[1] = new int[mapSizeX * mapSizeZ * 6];
+        triangles[2] = new int[mapSizeX * mapSizeZ * 6];
+        triangles[3] = new int[mapSizeX * mapSizeZ * 6];
 
         int vert = 0;
         int tris = 0;
@@ -94,12 +124,42 @@ public class TerrainGenerator : MonoBehaviour
         {
             for (int x = 0; x < mapSizeX; x++)
             {
-                triangles[tris + 0] = vert + 0;
-                triangles[tris + 1] = vert + mapSizeX + 1;
-                triangles[tris + 2] = vert + 1;
-                triangles[tris + 3] = vert + 1;
-                triangles[tris + 4] = vert + mapSizeX + 1;
-                triangles[tris + 5] = vert + mapSizeX + 2;
+                if (biomes[vert] == Biome.Mountains)
+                {
+                    triangles[0][tris + 0] = vert + 0;
+                    triangles[0][tris + 1] = vert + mapSizeX + 1;
+                    triangles[0][tris + 2] = vert + 1;
+                    triangles[0][tris + 3] = vert + 1;
+                    triangles[0][tris + 4] = vert + mapSizeX + 1;
+                    triangles[0][tris + 5] = vert + mapSizeX + 2;
+                }
+                else if (biomes[vert] == Biome.GrassLands)
+                {
+                    triangles[1][tris + 0] = vert + 0;
+                    triangles[1][tris + 1] = vert + mapSizeX + 1;
+                    triangles[1][tris + 2] = vert + 1;
+                    triangles[1][tris + 3] = vert + 1;
+                    triangles[1][tris + 4] = vert + mapSizeX + 1;
+                    triangles[1][tris + 5] = vert + mapSizeX + 2;
+                }
+                else if (biomes[vert] == Biome.Snow)
+                {
+                    triangles[2][tris + 0] = vert + 0;
+                    triangles[2][tris + 1] = vert + mapSizeX + 1;
+                    triangles[2][tris + 2] = vert + 1;
+                    triangles[2][tris + 3] = vert + 1;
+                    triangles[2][tris + 4] = vert + mapSizeX + 1;
+                    triangles[2][tris + 5] = vert + mapSizeX + 2;
+                }
+                else if (biomes[vert] == Biome.Beach)
+                {
+                    triangles[3][tris + 0] = vert + 0;
+                    triangles[3][tris + 1] = vert + mapSizeX + 1;
+                    triangles[3][tris + 2] = vert + 1;
+                    triangles[3][tris + 3] = vert + 1;
+                    triangles[3][tris + 4] = vert + mapSizeX + 1;
+                    triangles[3][tris + 5] = vert + mapSizeX + 2;
+                }
 
                 vert++;
                 tris += 6;
@@ -113,21 +173,7 @@ public class TerrainGenerator : MonoBehaviour
             for (int x = 0; x <= mapSizeX; x++)
             {
                 float height = vertices[i].y;
-                uvs[i] = new Vector2((float)x/mapSizeX, (float)z/mapSizeZ);
-                i++;
-            }
-        }
-    }
-    public void UpdateTerrain()
-    {
-        GetComponent<MeshCollider>().sharedMesh = mesh;
-        for (int i = 0, z = 0; z <= mapSizeZ; z++)
-        {
-            for (int x = 0; x <= mapSizeX; x++)
-            {
-                float y = ReturnPerlinNoise(x, z);
-                vertices[i] = CenterTerrainWithPlayer(x, y, z);
-                water[i].transform.position = CenterTerrainWithPlayer(x, waterLevel, z);
+                uvs[i] = new Vector2((float)x / mapSizeX, (float)z / mapSizeZ);
                 i++;
             }
         }
@@ -135,5 +181,8 @@ public class TerrainGenerator : MonoBehaviour
         UpdateMesh();
     }
 
+    public void CreateWater()
+    {
 
+    }
 }

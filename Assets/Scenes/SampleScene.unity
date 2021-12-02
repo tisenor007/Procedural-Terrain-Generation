@@ -462,13 +462,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: afa364a4e6ebba64ab717f2f5b246d44, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mapSizeX: 100
-  mapSizeZ: 62
+  mapSizeX: 75
+  mapSizeZ: 75
   amp: 10
   freq: 0.06
-  waterLevel: 3
+  waterLevel: 5
   player: {fileID: 539397664}
   waterPrefab: {fileID: 4048670065312011560, guid: e273353280df8f24ba86b34b05467bb7, type: 3}
+  mountainHeight: 10
+  mountainSnowHeight: 6
   smoothGen: 0
 --- !u!4 &1754360847
 Transform:
@@ -503,7 +505,10 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: bdcff2233f46226498d5a88f878b3ad3, type: 2}
+  - {fileID: 2100000, guid: 14fc70b960a5a18408326f8e50c26c3d, type: 2}
+  - {fileID: 2100000, guid: f1149cf3b14f36448b19d8fe850b9526, type: 2}
+  - {fileID: 2100000, guid: 64e1b588da93db241a68938234fcec5e, type: 2}
+  - {fileID: 2100000, guid: bcc789f9c751abf4d9500f70feb26fef, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
