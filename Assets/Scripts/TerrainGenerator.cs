@@ -12,17 +12,22 @@ public class TerrainGenerator : MonoBehaviour
         Snow,
         Length
     }
-    public int mapSizeX = 10;
-    public int mapSizeZ = 10;
-    public float amp = 10;
-    public float freq = 0.08f;
-    public float waterLevel;
     public GameObject player;
     public GameObject waterPrefab;
-    public float mountainHeight = 5;
-    public float mountainSnowHeight = 5;
+    [HideInInspector]
+    public int mapSizeX;
+    [HideInInspector]
+    public int mapSizeZ;
+    [HideInInspector]
+    public float amp;
+    [HideInInspector]
+    public float freq;
+    [HideInInspector]
+    public float waterLevel;
+    [HideInInspector]
     public bool smoothGen = false;
-    //public Material matColour;
+    private float mountainHeight = 10;
+    private float mountainSnowHeight = 6;
     private GameObject water;
     private Mesh mesh;
     private Vector3[] vertices;
@@ -31,20 +36,30 @@ public class TerrainGenerator : MonoBehaviour
     private int[][] triangles;
     private Vector3 middlePosition;
     private float timeGenSpeed = 10;
+    private GameObject gameManagerObj;
+    private GameManager gameManager;
 
     // Start is called before the first frame update
     void Start()
     {
-        //timeGenSpeed = 10;
+        if (gameManagerObj == null) { gameManagerObj = GameObject.Find("GameManager"); }
+        if (gameManagerObj != null) { gameManager = gameManagerObj.GetComponent<GameManager>(); }
+        if (gameManager != null)
+        {
+            mapSizeX = gameManager.newX;
+            mapSizeZ = gameManager.newZ;
+            amp = gameManager.newAmp;
+            freq = gameManager.newFreq;
+            waterLevel = gameManager.newWaterLevel;
+            smoothGen = gameManager.nextSmoothGen;
+        }
         CreateTerrain();
-        //UpdateTerrain();
     }
 
     // Update is called once per frame
     void Update()
     {
         //Debug.Log(amp / (freq * 10));
-        GetComponent<MeshCollider>().sharedMesh = mesh;
         if (smoothGen == false)
         {
             if (player.transform.position.x >= middlePosition.x + mapSizeX / 4 && player.transform.position.x > middlePosition.x || player.transform.position.x <= middlePosition.x - mapSizeX / 4 && player.transform.position.x < middlePosition.x || player.transform.position.z >= middlePosition.z + mapSizeZ / 4 && player.transform.position.z > middlePosition.z || player.transform.position.z <= middlePosition.z - mapSizeZ / 4 && player.transform.position.z < middlePosition.z)
@@ -52,11 +67,7 @@ public class TerrainGenerator : MonoBehaviour
                 CreateTerrain();
             }
         }
-        else if (smoothGen == true)
-        {
-            CreateTerrain();
-        }
-
+        else if (smoothGen == true){CreateTerrain();}
     }
     public float ReturnPerlinNoise(int x, int z)
     {
@@ -104,6 +115,7 @@ public class TerrainGenerator : MonoBehaviour
         }
         water.transform.parent = transform;
 
+        //determines biomes based off height
         biomes = new Biome[vertices.Length];
         for (int i = 0; i < vertices.Length; i++)
         {
@@ -113,11 +125,11 @@ public class TerrainGenerator : MonoBehaviour
             else if (vertices[i].y > mountainHeight + mountainSnowHeight) { biomes[i] = Biome.Snow; }
         }
 
+        //sets triangles for each biome
         triangles[0] = new int[mapSizeX * mapSizeZ * 6];
         triangles[1] = new int[mapSizeX * mapSizeZ * 6];
         triangles[2] = new int[mapSizeX * mapSizeZ * 6];
         triangles[3] = new int[mapSizeX * mapSizeZ * 6];
-
         int vert = 0;
         int tris = 0;
         for (int z = 0; z < mapSizeZ; z++)
@@ -166,7 +178,7 @@ public class TerrainGenerator : MonoBehaviour
             }
             vert++;
         }
-
+        //allows texture to be displayed...
         uvs = new Vector2[vertices.Length];
         for (int i = 0, z = 0; z <= mapSizeZ; z++)
         {
@@ -179,10 +191,7 @@ public class TerrainGenerator : MonoBehaviour
         }
         middlePosition = player.transform.position;
         UpdateMesh();
-    }
-
-    public void CreateWater()
-    {
-
+        //updates collider....
+        GetComponent<MeshCollider>().sharedMesh = mesh;
     }
 }
